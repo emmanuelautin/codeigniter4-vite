@@ -164,21 +164,18 @@ Créez un fichier `vite.config.js` à la racine du projet.
 
 ```js
 import { defineConfig } from 'vite';
-import codeigniter4 from 'vite-plugin-codeigniter4';
+import codeigniter4Vite from 'vite-plugin-codeigniter4';
 
 export default defineConfig({
     plugins: [
-        codeigniter4(),
+        codeigniter4Vite({
+            input: ['resources/js/app.js'],
+            publicDirectory: 'public',
+            buildDirectory: 'build',
+            hotFile: 'writable/vite/hot',
+            refresh: ['app/Views/**', 'app/Controllers/**'],
+        }),
     ],
-    build: {
-        manifest: 'manifest.json',
-        outDir: 'public/build',
-        rollupOptions: {
-            input: {
-                app: 'resources/js/app.js',
-            },
-        },
-    },
     server: {
         host: 'localhost',
         port: 5173,
@@ -187,11 +184,96 @@ export default defineConfig({
 });
 ```
 
-### Pourquoi cette config ?
+### Points importants
 
-* `outDir: 'public/build'` permet au package PHP de lire les fichiers buildés depuis `public/build`
-* `manifest: 'manifest.json'` force la génération du manifest exactement à l’emplacement attendu par le package Composer
-* `input.app = 'resources/js/app.js'` définit le point d’entrée principal
+Ton plugin gère déjà automatiquement une bonne partie de la configuration Vite :
+
+* `base` vaut `/` en mode dev
+* `base` vaut `/build/` en mode build
+* `build.manifest` est forcé à `manifest.json`
+* `build.outDir` est calculé à partir de `publicDirectory + buildDirectory`
+* `rollupOptions.input` est alimenté à partir de l’option `input`
+* le fichier hot est écrit dans `writable/vite/hot`
+
+Donc, contrairement à la première version de cette doc, il n’est **pas nécessaire** de redéclarer manuellement `build.outDir`, `manifest` et `rollupOptions.input` si tu utilises déjà le plugin correctement.
+
+### Options du plugin
+
+```js
+codeigniter4Vite({
+    input: ['resources/js/app.js'],
+    publicDirectory: 'public',
+    buildDirectory: 'build',
+    hotFile: 'writable/vite/hot',
+    refresh: ['app/Views/**', 'app/Controllers/**'],
+})
+```
+
+#### `input`
+
+Obligatoire.
+
+Doit être un tableau non vide.
+
+Exemple :
+
+```js
+input: ['resources/js/app.js']
+```
+
+Ou avec plusieurs entrées :
+
+```js
+input: ['resources/js/app.js', 'resources/js/admin.js']
+```
+
+#### `publicDirectory`
+
+Dossier public racine.
+
+Valeur par défaut :
+
+```js
+'public'
+```
+
+#### `buildDirectory`
+
+Sous-dossier de build dans le dossier public.
+
+Valeur par défaut :
+
+```js
+'build'
+```
+
+Avec la config par défaut, les fichiers générés iront dans :
+
+```txt
+public/build
+```
+
+#### `hotFile`
+
+Chemin du fichier hot utilisé par le package PHP pour détecter le mode développement.
+
+Valeur par défaut :
+
+```js
+'writable/vite/hot'
+```
+
+Le plugin écrit automatiquement l’URL du serveur Vite dans ce fichier au démarrage, puis le supprime à l’arrêt.
+
+#### `refresh`
+
+Liste facultative de fichiers ou dossiers à surveiller en plus.
+
+Exemple :
+
+```js
+refresh: ['app/Views/**', 'app/Controllers/**']
+```
 
 ---
 
@@ -293,8 +375,14 @@ http://localhost:8080
 
 ### Ce qui se passe en dev
 
-Quand le fichier `writable/vite/hot` existe, le helper PHP considère que Vite tourne en mode développement.
-Dans ce cas, `vite_tags()` génère les balises pointant vers le serveur Vite, y compris `@vite/client`.
+Quand Vite démarre, ton plugin :
+
+* calcule l’URL du serveur Vite (`http://localhost:5173` par défaut)
+* écrit cette URL dans `writable/vite/hot`
+* permet au helper PHP `vite_tags()` de pointer automatiquement vers le serveur Vite
+* ajoute éventuellement les chemins déclarés dans `refresh` au watcher
+
+Quand Vite s’arrête, le plugin supprime automatiquement `writable/vite/hot`.
 
 ---
 
@@ -352,19 +440,17 @@ Dans la majorité des cas, la config par défaut suffit déjà.
 
 ```js
 import { defineConfig } from 'vite';
-import codeigniter4 from 'vite-plugin-codeigniter4';
+import codeigniter4Vite from 'vite-plugin-codeigniter4';
 
 export default defineConfig({
-    plugins: [codeigniter4()],
-    build: {
-        manifest: 'manifest.json',
-        outDir: 'public/build',
-        rollupOptions: {
-            input: {
-                app: 'resources/js/app.js',
-            },
-        },
-    },
+    plugins: [
+        codeigniter4Vite({
+            input: ['resources/js/app.js'],
+            publicDirectory: 'public',
+            buildDirectory: 'build',
+            hotFile: 'writable/vite/hot',
+        }),
+    ],
 });
 ```
 
@@ -420,7 +506,15 @@ public/build/manifest.json
 
 ## `Vite entry not found in manifest: resources/js/app.js`
 
-Vérifiez que le chemin passé à `vite_tags()` correspond exactement à l’entrée déclarée dans `rollupOptions.input`.
+Vérifiez que le chemin passé à `vite_tags()` correspond exactement à l’une des entrées déclarées dans l’option `input` du plugin.
+
+Exemple :
+
+```js
+codeigniter4Vite({
+  input: ['resources/js/app.js']
+})
+```
 
 ## Les styles ne chargent pas
 
