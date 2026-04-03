@@ -2,6 +2,8 @@
 
 Small Vite integration helper for CodeIgniter 4.
 
+A utiliser avec https://www.npmjs.com/package/vite-plugin-codeigniter4
+
 ## Features
 
 - Loads assets from Vite dev server in development
