@@ -1,0 +1,20 @@
+{
+  "name": "emmanuelautin/codeigniter4-vite",
+  "description": "Vite helper integration for CodeIgniter 4",
+  "type": "codeigniter4-module",
+  "license": "MIT",
+  "autoload": {
+    "psr-4": {
+      "EmmanuelAutin\\\\CodeIgniter4Vite\\\\": "src/"
+    }
+  },
+  "extra": {
+    "branch-alias": {
+      "dev-main": "1.x-dev"
+    }
+  },
+  "require": {
+    "php": "^8.1",
+    "codeigniter4/framework": "^4.5"
+  }
+}
