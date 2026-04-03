@@ -186,7 +186,7 @@ export default defineConfig({
 
 ### Points importants
 
-Ton plugin gère déjà automatiquement une bonne partie de la configuration Vite :
+Le plugin gère déjà automatiquement une bonne partie de la configuration Vite :
 
 * `base` vaut `/` en mode dev
 * `base` vaut `/build/` en mode build
@@ -194,8 +194,6 @@ Ton plugin gère déjà automatiquement une bonne partie de la configuration Vit
 * `build.outDir` est calculé à partir de `publicDirectory + buildDirectory`
 * `rollupOptions.input` est alimenté à partir de l’option `input`
 * le fichier hot est écrit dans `writable/vite/hot`
-
-Donc, contrairement à la première version de cette doc, il n’est **pas nécessaire** de redéclarer manuellement `build.outDir`, `manifest` et `rollupOptions.input` si tu utilises déjà le plugin correctement.
 
 ### Options du plugin
 
@@ -375,7 +373,7 @@ http://localhost:8080
 
 ### Ce qui se passe en dev
 
-Quand Vite démarre, ton plugin :
+Quand Vite démarre  :
 
 * calcule l’URL du serveur Vite (`http://localhost:5173` par défaut)
 * écrit cette URL dans `writable/vite/hot`
